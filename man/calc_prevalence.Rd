@@ -26,7 +26,7 @@ to calculate the prevalance on.}
 A function to calculate the prevalence per given time period, such as per week.
 }
 \examples{
-library(tidyr)
+library(tibble)
 d_ostrc = tribble(~id_participant, ~week_nr, ~hp,
                   1, 1, 1,
                   1, 1, 1,

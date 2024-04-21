@@ -42,6 +42,8 @@ or should have been sent if there was a delay in sending.}
 \item{ostrc_3}{vector within `d_ostrc` with responses to OSTRC questionnaire question 3.}
 
 \item{ostrc_4}{vector within `d_ostrc` with responses to OSTRC questionnaire question 4.}
+
+\item{version}{TO WRITE.}
 }
 \value{
 a dataframe with one entry per health problem.
@@ -59,6 +61,8 @@ it was sent. In other words, that it pertains to the week before the date.
 It also adds whether or not the health problem is substantial.
 }
 \examples{
+library(tibble)
+library(dplyr)
 d_ostrc = tribble(~id_participant, ~id_case, ~date_ostrc, ~q1, ~q2, ~q3, ~q4, ~hb_type, ~inj_type,
                   1, 1, "2023-01-01", 8, 0, 17, 25, "Injury", "Overuse",
                   1, 1, "2023-01-07", 8, 0, 17, 25, "Injury", "Overuse",

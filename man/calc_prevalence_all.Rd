@@ -37,7 +37,7 @@ a variable within `d_ostrc`. The variable must be
 class categorical or factor. Examples are "season", "gender" etc.
 Output will be calculated per subgroup.}
 
-\item{ci_level}{The level of the confidence intervals. Default is 0.95 for 95% confidence intervals.}
+\item{ci_level}{The level of the confidence intervals. Default is 0.95 for 95\% confidence intervals.}
 }
 \description{
 A function to calculate the mean prevalence for each health problem type

@@ -5,6 +5,7 @@
 #' @importFrom lubridate as_date
 #' @import tibble
 #' @import dplyr
+#' @importFrom tidyr fill
 NULL
 
 #' Add Event Id
@@ -29,6 +30,8 @@ NULL
 #'              Can be any event that is of interest to the study.
 #' @return The input dataset with a new column, which indexes each event interval.
 #' @examples
+#' library(tibble)
+#' library(dplyr)
 #' d_matches_sim = tribble(~date, ~match,
 #'                         "2017-08-22", 0,
 #'                         "2017-08-23", 1,
@@ -63,7 +66,7 @@ add_event_id = function(d, date, event){
 
   # fill missing day-indices
   d_events = d_events %>%
-    rename(event_id = rowname) %>%
-    fill(event_id, .direction = "up")
+    rename(event_id = "rowname") %>%
+    tidyr::fill("event_id", .direction = "up")
   d_events
 }

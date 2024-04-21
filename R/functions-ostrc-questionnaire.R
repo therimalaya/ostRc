@@ -2,8 +2,13 @@
 #' @importFrom rlang enquo as_string quo_name
 #' @importFrom nplyr nest_mutate nest_summarise
 #' @importFrom confintr ci_proportion
+#' @importFrom tidyr nest unnest
+#' @importFrom dplyr mutate
 #' @import tibble
 #' @import dplyr
+#' @import utils
+
+utils::globalVariables(".")
 
 NULL
 
@@ -176,23 +181,23 @@ find_hp = function(ostrc_1){
 #'         substantial health problem, 0 for
 #'         non-substantial health problem. Non-health problems are returned as NA.
 #' @examples
-#'   ostrc_1 = c(8, 8, 8, 8)
-#'   ostrc_2 = c(0, 0, 0, 25)
-#'   ostrc_3 = c(0, 0, 17, 0)
-#'   find_hp_substantial(ostrc_1, ostrc_2, ostrc_3)
+#' ostrc_1 = c(8, 8, 8, 8)
+#' ostrc_2 = c(0, 0, 0, 25)
+#' ostrc_3 = c(0, 0, 17, 0)
+#' find_hp_substantial(ostrc_1, ostrc_2, ostrc_3)
 #'
-#'   ostrc_2_v1 = c(0, 8, 0, 19)
-#'   ostrc_3_v1 = c(0, 0, 13, 0)
-#'   find_hp_substantial(ostrc_1, ostrc_2_v1, ostrc_3_v1)
+#' ostrc_2_v1 = c(0, 8, 0, 19)
+#' ostrc_3_v1 = c(0, 0, 13, 0)
+#' find_hp_substantial(ostrc_1, ostrc_2_v1, ostrc_3_v1)
 #'
-#'   ostrc_2_othercodes = c(1, 2, 3, 4)
-#'   ostrc_3_othercodes = c(0, 1, 2, 3)
-#'   find_hp_substantial(ostrc_1, ostrc_2_othercodes, ostrc_3_othercodes)
+#' ostrc_2_othercodes = c(1, 2, 3, 4)
+#' ostrc_3_othercodes = c(0, 1, 2, 3)
+#' find_hp_substantial(ostrc_1, ostrc_2_othercodes, ostrc_3_othercodes)
 #'
-#'   ostrc_1_missing = c(25, NA, NA, NA)
-#'   ostrc_2_missing = c(NA, NA, NA, 17)
-#'   ostrc_3_missing = c(NA, 8, NA, NA)
-#'   find_hp_substantial(ostrc_1_missing, ostrc_2_missing, ostrc_3_missing)
+#' ostrc_1_missing = c(25, NA, NA, NA)
+#' ostrc_2_missing = c(NA, NA, NA, 17)
+#' ostrc_3_missing = c(NA, 8, NA, NA)
+#' find_hp_substantial(ostrc_1_missing, ostrc_2_missing, ostrc_3_missing)
 #' @export
 find_hp_substantial = function(ostrc_1, ostrc_2, ostrc_3, version = "2.0"){
   stopifnot(is.numeric(ostrc_1))
@@ -306,6 +311,7 @@ calc_severity_score = function(ostrc_1, ostrc_2, ostrc_3, ostrc_4){
 #' @param ostrc_1 vector with responses to OSTRC questionnaire question 1.
 #' @return a numeric vector of time loss in number of weeks.
 #' @examples
+#' library(tibble)
 #' d_ostrc = tribble(~id_participant, ~id_case, ~date_sent, ~q1,
 #'                  1, 1, "2023-01-01", 8,
 #'                  1, 1, "2023-01-07", 8,
@@ -347,11 +353,11 @@ calc_timeloss = function(d_ostrc, id_participant, id_case, date_ostrc, ostrc_1){
   d_cases_unselected = d_ostrc %>%
     filter(!is.na(!!id_case), !!ostrc_1 > 0) %>%
     group_by(!!id_participant, !!id_case) %>%
-    nest()
+    tidyr::nest()
 
   d_cases_timeloss = d_cases_unselected %>%
-    nest_mutate(data, week_lost_yn = ifelse(!!ostrc_1 == 25, 1, 0)) %>%
-    nest_summarise(data, weeks_lost = sum(week_lost_yn))
+    nplyr::nest_mutate(data, week_lost_yn = ifelse(!!ostrc_1 == 25, 1, 0)) %>%
+    nplyr::nest_summarise(data, weeks_lost = sum(.data$week_lost_yn))
 
   l_timeloss = d_cases_timeloss$data %>% map(. %>% pull())
   vector_timeloss = as.numeric(unlist(l_timeloss))
@@ -387,10 +393,13 @@ calc_timeloss = function(d_ostrc, id_participant, id_case, date_ostrc, ostrc_1){
 #' @param ostrc_2 vector within `d_ostrc` with responses to OSTRC questionnaire question 2.
 #' @param ostrc_3 vector within `d_ostrc` with responses to OSTRC questionnaire question 3.
 #' @param ostrc_4 vector within `d_ostrc` with responses to OSTRC questionnaire question 4.
+#' @param version TO WRITE.
 #' @return a dataframe with one entry per health problem.
 #'         Includes the original columns of the input data,
 #'         and also extra columns: start_date, end_date, duration, severity_score, hb_sub.
 #' @examples
+#' library(tibble)
+#' library(dplyr)
 #' d_ostrc = tribble(~id_participant, ~id_case, ~date_ostrc, ~q1, ~q2, ~q3, ~q4, ~hb_type, ~inj_type,
 #'                   1, 1, "2023-01-01", 8, 0, 17, 25, "Injury", "Overuse",
 #'                   1, 1, "2023-01-07", 8, 0, 17, 25, "Injury", "Overuse",
@@ -422,7 +431,7 @@ create_case_data = function(d_ostrc, id_participant, id_case,
     mutate(hp = find_hp(!!ostrc_1))
 
   # check that all health problem cases have an ID
- if(nrow(d_ostrc %>% filter(is.na(!!id_case) & hp == 1) != 0)){
+ if(nrow(d_ostrc %>% filter(is.na(!!id_case) & .data$hp == 1) != 0)){
   stop("Health problems were detected that did not have a case ID.
        Ensure all health problems have an ID.")
  }
@@ -480,16 +489,16 @@ create_case_data = function(d_ostrc, id_participant, id_case,
 
   # calculate duration per health problem
   d_cases_unselected = d_ostrc %>%
-    filter(!is.na(!!id_case), hp == 1) %>%
+    filter(!is.na(!!id_case), .data$hp == 1) %>%
     group_by(!!id_participant, !!id_case) %>%
     nest() %>%
     nest_mutate(data,
                 date_start = as.Date(min(!!date_ostrc, na.rm = TRUE)),
                 date_end = as.Date(max(!!date_ostrc, na.rm = TRUE)),
                 # Add 1 to ensure that dates with no diff counts as 1 day:
-                duration = round(as.numeric(difftime(date_end, date_start,
+                duration = round(as.numeric(difftime(.data$date_end, .data$date_start,
                                              units = "weeks"))+1)) %>%
-    unnest(cols = c(data)) %>%
+    tidyr::unnest(cols = c(data)) %>%
     ungroup() %>%
     distinct(!!id_participant, !!id_case, .keep_all = TRUE)
 
@@ -515,9 +524,9 @@ create_case_data = function(d_ostrc, id_participant, id_case,
   if(an_error_occured){
     d_cases = d_cases_unselected %>%
       select(!!id_case, !!id_participant,
-             date_start, date_end, duration,
+             "date_start", "date_end", "duration",
              !!ostrc_1, !!ostrc_2, !!ostrc_3, !!ostrc_4,
-             severity_score, everything(), -hp)
+             "severity_score", everything(), -"hp")
     warning("Substantial health problems could not be found.")
   } else {
     d_cases_unselected = d_cases_unselected %>%
@@ -527,8 +536,9 @@ create_case_data = function(d_ostrc, id_participant, id_case,
 
     d_cases = d_cases_unselected %>%
       select(!!id_case, !!id_participant,
-             date_start, date_end, duration, timeloss, hp_sub,
-             severity_score, everything(), -hp,
+             "date_start", "date_end", "duration",
+             "timeloss", "hp_sub",
+             "severity_score", everything(), -"hp",
              -!!ostrc_1, -!!ostrc_2, -!!ostrc_3, -!!ostrc_4, -!!date_ostrc)
   }
 d_cases

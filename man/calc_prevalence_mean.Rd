@@ -23,13 +23,13 @@ This can be health problem (1/0), injury (1/0),
 illness (1/0), acute injury (1/0) or any other health problem type that the user wishes
 to calculate the prevalence of.}
 
-\item{ci_level}{The level of the confidence intervals. Default is 0.95 for 95% confidence intervals.}
+\item{ci_level}{The level of the confidence intervals. Default is 0.95 for 95\% confidence intervals.}
 }
 \description{
 A function to calculate the mean prevalence per given time period, such as per week.
 }
 \examples{
-library(tidyr)
+library(tibble)
 d_ostrc = tribble(~id_participant, ~week_nr, ~hp,
                  1, 1, 1,
                  1, 1, 1,

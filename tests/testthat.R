@@ -1,4 +1,4 @@
 library(testthat)
-library(ostrc)
+library(ostRc)
 
-test_check("ostrc")
+test_check("ostRc")

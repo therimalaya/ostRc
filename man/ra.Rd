@@ -16,6 +16,8 @@ ra(x, n_days, window = TRUE, ...)
  If TRUE (default), then the subset of indexes that are in range are passed to FUN.
  A numeric argument to partial can be used to determine the minimal window size
 for partial computations. Defaults to TRUE and will calculate RA based on what you have available.}
+
+\item{...}{optional arguments to base::mean() function.}
 }
 \description{
 Function for calculating rolling averages on a chooseable number of days
