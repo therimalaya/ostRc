@@ -41,9 +41,11 @@ test_that("Returns a dataset with output columns
           named the same as the input columns.",
           {
            othernames = c("p_id", "injury_id")
-           creatednames = names(create_case_data(
+           d_othernames <- d_ostrc %>%
+             rename("p_id" = "id_participant", "injury_id" = "id_case")
+           suppressWarnings({creatednames = names(create_case_data(
                                   d_othernames, p_id, injury_id, date_ostrc,
-                                  q1, q2, q3, q4))
+                                  q1, q2, q3, q4))})
            expect_true(all(othernames %in% creatednames))
           })
 
@@ -234,3 +236,4 @@ test_that("Adds a column for time loss.",
 
             expect_true(any(names(d_test) %in% "timeloss"))
           })
+

@@ -23,8 +23,8 @@ NULL
 #'                illness (1/0), acute injury (1/0) or any other health problem type that the user wishes
 #'                to calculate the incidence on.
 #' @examples
-#' library(tidyr)
-#' d_ostrc = tribble(~id_participant, ~day_nr, ~hp,
+#' library(tibble)
+#' d_ostrc = tribble(~id_participant, ~week_nr, ~hp,
 #'                   1, 1, 1,
 #'                   1, 1, 1,
 #'                   1, 2, 0,
@@ -88,8 +88,8 @@ calc_incidence = function(d_ostrc, id_participant, time, hp_type){
     )
   }
 
-  if(length(unique(na.omit(hp_type_values)))==1){
-    warning("The incidence of ",hp_type_name," is constant.")
+  if(length(unique(na.omit(hp_type_values))) == 1){
+    warning("The incidence of ", hp_type_name," is constant.")
   }
 
   # Missing time points won't be included,
@@ -100,18 +100,18 @@ calc_incidence = function(d_ostrc, id_participant, time, hp_type){
   d_hp_type_per_id_per_time = d_nonmissing %>%
     group_by(!!id_participant, !!time) %>%
     summarise(hp_type_n = sum(!!hp_type, na.rm = TRUE)) %>%
-    mutate(hp_type_atleast1 = ifelse(hp_type_n > 0, 1, 0)) %>%
+    mutate(hp_type_atleast1 = ifelse(.data$hp_type_n > 0, 1, 0)) %>%
     ungroup()
 
   # find out if previous time period had a 1 or 0
   d_hp_type_per_id_per_time =
     d_hp_type_per_id_per_time %>%
     group_by(!!id_participant) %>%
-    mutate(previous_time_status = lag(hp_type_atleast1),
-           new_case = case_when(previous_time_status == 0 & hp_type_atleast1 == 1 ~ 1,
+    mutate(previous_time_status = lag(.data$hp_type_atleast1),
+           new_case = case_when(previous_time_status == 0 & .data$hp_type_atleast1 == 1 ~ 1,
                                 previous_time_status == 1 ~ 0,
-                                hp_type_atleast1 == 0 ~ 0,
-                                is.na(previous_time_status) & hp_type_atleast1 == 1 ~ NA_real_)) %>%
+                                .data$hp_type_atleast1 == 0 ~ 0,
+                                is.na(previous_time_status) & .data$hp_type_atleast1 == 1 ~ NA_real_)) %>%
     ungroup()
 
   # different calculation if it is the first timepoint of data or not
@@ -122,15 +122,15 @@ calc_incidence = function(d_ostrc, id_participant, time, hp_type){
   d_incidence_firsttime = d_first_time %>%
     group_by(!!time) %>%
     summarise(n_responses = n(),
-              n_new_cases = sum(new_case),
-              inc_cases = ifelse(n_new_cases == 0, 0, NA)) %>%
+              n_new_cases = sum(.data$new_case),
+              inc_cases = ifelse(.data$n_new_cases == 0, 0, NA)) %>%
     ungroup()
 
   d_incidence_resttime = d_rest_time %>%
     group_by(!!time) %>%
     summarise(n_responses = n(),
-              n_new_cases = sum(new_case, na.rm = TRUE),
-              inc_cases = n_new_cases/n_responses) %>%
+              n_new_cases = sum(.data$new_case, na.rm = TRUE),
+              inc_cases = .data$n_new_cases/.data$n_responses) %>%
     ungroup()
 
   d_incidence = bind_rows(d_incidence_firsttime, d_incidence_resttime)
@@ -153,9 +153,9 @@ calc_incidence = function(d_ostrc, id_participant, time, hp_type){
 #'                This can be health problem (1/0), injury (1/0),
 #'                illness (1/0), acute injury (1/0) or any other health problem type that the user wishes
 #'                to calculate the incidence of.
-#' @param ci_level The level of the confidence intervals. Default is 0.95 for 95% confidence intervals.
+#' @param ci_level The level of the confidence intervals. Default is 0.95 for 95\% confidence intervals.
 #' @examples
-#' library(tidyr)
+#' library(tibble)
 #' d_ostrc = tribble(~id_participant, ~week_nr, ~hp,
 #'                  1, 1, 1,
 #'                  1, 1, 1,
@@ -177,8 +177,8 @@ calc_incidence_mean = function(d_ostrc, id_participant, time, hp_type, ci_level 
 
   # calc incidences
   d_incmean = d_incidence %>%
-    summarise(inc_mean = mean(inc_cases, na.rm = TRUE),
-              inc_sd = sd(inc_cases, na.rm = TRUE))
+    summarise(inc_mean = mean(.data$inc_cases, na.rm = TRUE),
+              inc_sd = sd(.data$inc_cases, na.rm = TRUE))
 
   # calc CIs
   count = nrow(d_incidence)
@@ -216,9 +216,9 @@ calc_incidence_mean = function(d_ostrc, id_participant, time, hp_type, ci_level 
 #'                a variable within `d_ostrc`. The variable must be
 #'                class categorical or factor. Examples are "season", "gender" etc.
 #'                Output will be calculated per subgroup.
-#' @param ci_level The level of the confidence intervals. Default is 0.95 for 95% confidence intervals.
+#' @param ci_level The level of the confidence intervals. Default is 0.95 for 95\% confidence intervals.
 #' @examples
-#' library(tidyr)
+#' library(tibble)
 #' d_ostrc = tribble(~id_participant, ~week_nr, ~hp, ~hp_sub, ~season,
 #'                  1, 1, 1, 0, 1,
 #'                  1, 2, 1, 1, 1,
@@ -252,13 +252,13 @@ calc_incidence_all = function(d_ostrc, id_participant, time, hp_types, group = N
       l_incidences[[i]] = l_incidences[[i]] %>% mutate(hp_type = hp_types[[i]])
     }
     d_incidences = bind_rows(l_incidences)
-    d_incidences %<>% select(hp_type, starts_with("inc"))
+    d_incidences %<>% select("hp_type", starts_with("inc"))
   } else {
     group = syms(group)
     d_nested = d_ostrc %>% group_by(!!!group) %>%
       nest()
     n_groups = length(d_nested$data)
-    d_grouping_var = d_nested %>% select(-data) %>% ungroup()
+    d_grouping_var = d_nested %>% select(-"data") %>% ungroup()
     var_name = names(d_grouping_var)
 
     for(i in 1:length(d_nested$data)){
@@ -287,7 +287,7 @@ calc_incidence_all = function(d_ostrc, id_participant, time, hp_types, group = N
                                   d_incs
                                 }
     ) %>% bind_rows
-    d_incidences %<>% select(all_of(var_name), hp_type, starts_with("inc"))
+    d_incidences %<>% select(all_of(var_name), "hp_type", starts_with("inc"))
   }
   d_incidences
 }

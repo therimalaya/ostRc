@@ -1,2 +1,8 @@
 ^.*\.Rproj$
 ^\.Rproj\.user$
+
+^images$
+^README.Rmd
+^LICENSE\.md$
+
+^inst/CITATION.cff

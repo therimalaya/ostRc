@@ -34,6 +34,7 @@ a numeric vector of time loss in number of weeks.
 Calculates time loss, in number of weeks, on OSTRC questionnaire data.
 }
 \examples{
+library(tibble)
 d_ostrc = tribble(~id_participant, ~id_case, ~date_sent, ~q1,
                  1, 1, "2023-01-01", 8,
                  1, 1, "2023-01-07", 8,

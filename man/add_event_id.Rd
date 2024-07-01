@@ -33,6 +33,8 @@ all days from first match to second match in the next cycle and so on.
 Requires a date-variable and an indicator for the event (injury/match/competition).
 }
 \examples{
+library(tibble)
+library(dplyr)
 d_matches_sim = tribble(~date, ~match,
                         "2017-08-22", 0,
                         "2017-08-23", 1,

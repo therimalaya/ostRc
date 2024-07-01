@@ -35,9 +35,10 @@ moving_range  = function(x, abs = FALSE){
 #'                   If TRUE (default), then the subset of indexes that are in range are passed to FUN.
 #'                   A numeric argument to partial can be used to determine the minimal window size
 #'                  for partial computations. Defaults to TRUE and will calculate RA based on what you have available.
+#' @param ... optional arguments to base::mean() function.
 #' @export
 ra = function(x, n_days, window = TRUE, ...){
-  zoo::rollapplyr(x, n_days, mean, partial = window)
+  zoo::rollapplyr(x, n_days, mean, partial = window, ...)
 }
 
 #' Exponential-Weighted Moving Averages

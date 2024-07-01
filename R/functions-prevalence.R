@@ -2,6 +2,8 @@
 #' @importFrom rlang enquo as_string quo_name
 #' @importFrom nplyr nest_mutate
 #' @importFrom purrr pmap
+#' @importFrom stats na.omit qt sd
+#' @importFrom utils data
 #' @import tibble
 #' @import dplyr
 
@@ -23,7 +25,7 @@ NULL
 #'                illness (1/0), acute injury (1/0) or any other health problem type that the user wishes
 #'                to calculate the prevalance on.
 #' @examples
-#' library(tidyr)
+#' library(tibble)
 #' d_ostrc = tribble(~id_participant, ~week_nr, ~hp,
 #'                   1, 1, 1,
 #'                   1, 1, 1,
@@ -98,15 +100,15 @@ calc_prevalence = function(d_ostrc, id_participant, time, hp_type){
   d_hp_type_per_id_per_time = d_nonmissing %>%
     group_by(!!id_participant, !!time) %>%
     summarise(hp_type_n = sum(!!hp_type, na.rm = TRUE)) %>%
-    mutate(hp_type_atleast1 = ifelse(hp_type_n > 0, 1, 0)) %>%
+    mutate(hp_type_atleast1 = ifelse(.data$hp_type_n > 0, 1, 0)) %>%
     ungroup()
 
   # calculate prevalence
   d_prevalence = d_hp_type_per_id_per_time %>%
     group_by(!!time) %>%
     summarise(n_responses = n(),
-              n_cases = sum(hp_type_atleast1, na.rm = TRUE),
-              prev_cases = n_cases/n_responses) %>%
+              n_cases = sum(.data$hp_type_atleast1, na.rm = TRUE),
+              prev_cases = .data$n_cases/.data$n_responses) %>%
     ungroup()
   d_prevalence
 }
@@ -127,9 +129,9 @@ calc_prevalence = function(d_ostrc, id_participant, time, hp_type){
 #'                This can be health problem (1/0), injury (1/0),
 #'                illness (1/0), acute injury (1/0) or any other health problem type that the user wishes
 #'                to calculate the prevalence of.
-#' @param ci_level The level of the confidence intervals. Default is 0.95 for 95% confidence intervals.
+#' @param ci_level The level of the confidence intervals. Default is 0.95 for 95\% confidence intervals.
 #' @examples
-#' library(tidyr)
+#' library(tibble)
 #' d_ostrc = tribble(~id_participant, ~week_nr, ~hp,
 #'                  1, 1, 1,
 #'                  1, 1, 1,
@@ -151,8 +153,8 @@ calc_prevalence_mean = function(d_ostrc, id_participant, time, hp_type, ci_level
 
   # calc prevalences
   d_prevmean = d_prevalence %>%
-    summarise(prev_mean = mean(prev_cases, na.rm = TRUE),
-              prev_sd = sd(prev_cases, na.rm = TRUE))
+    summarise(prev_mean = mean(.data$prev_cases, na.rm = TRUE),
+              prev_sd = sd(.data$prev_cases, na.rm = TRUE))
 
   # calc CIs
   count = nrow(d_prevalence)
@@ -190,7 +192,7 @@ calc_prevalence_mean = function(d_ostrc, id_participant, time, hp_type, ci_level
 #'                a variable within `d_ostrc`. The variable must be
 #'                class categorical or factor. Examples are "season", "gender" etc.
 #'                Output will be calculated per subgroup.
-#' @param ci_level The level of the confidence intervals. Default is 0.95 for 95% confidence intervals.
+#' @param ci_level The level of the confidence intervals. Default is 0.95 for 95\% confidence intervals.
 #' @examples
 #' library(tidyr)
 #' d_ostrc = tribble(~id_participant, ~week_nr, ~hp, ~hp_sub, ~season,
@@ -226,13 +228,13 @@ calc_prevalence_all = function(d_ostrc, id_participant, time, hp_types, group = 
     l_prevalences[[i]] = l_prevalences[[i]] %>% mutate(hp_type = hp_types[[i]])
   }
   d_prevalences = bind_rows(l_prevalences)
-  d_prevalences %<>% select(hp_type, starts_with("prev"))
+  d_prevalences %<>% select("hp_type", starts_with("prev"))
  } else {
   group = syms(group)
   d_nested = d_ostrc %>% group_by(!!!group) %>%
      nest()
   n_groups = length(d_nested$data)
-  d_grouping_var = d_nested %>% select(-data) %>% ungroup()
+  d_grouping_var = d_nested %>% select(-"data") %>% ungroup()
   var_name = names(d_grouping_var)
 
   for(i in 1:length(d_nested$data)){
@@ -261,7 +263,7 @@ calc_prevalence_all = function(d_ostrc, id_participant, time, hp_types, group = 
                                 d_prevs
                               }
   ) %>% bind_rows
-  d_prevalences %<>% select(all_of(var_name), hp_type, starts_with("prev"))
+  d_prevalences %<>% select(all_of(var_name), "hp_type", starts_with("prev"))
  }
   d_prevalences
 }

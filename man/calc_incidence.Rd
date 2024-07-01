@@ -26,8 +26,8 @@ to calculate the incidence on.}
 A function to calculate the incidence per given time period, such as per week.
 }
 \examples{
-library(tidyr)
-d_ostrc = tribble(~id_participant, ~day_nr, ~hp,
+library(tibble)
+d_ostrc = tribble(~id_participant, ~week_nr, ~hp,
                   1, 1, 1,
                   1, 1, 1,
                   1, 2, 0,
