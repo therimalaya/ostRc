@@ -29,40 +29,44 @@ NULL
 #'              Can be any event that is of interest to the study.
 #' @return The input dataset with a new column, which indexes each event interval.
 #' @examples
-#' d_matches_sim = tribble(~date, ~match,
-#'                         "2017-08-22", 0,
-#'                         "2017-08-23", 1,
-#'                         "2017-08-24", 0,
-#'                         "2017-08-25", 0,
-#'                         "2017-08-26", 1)
-#' d_matches_sim = d_matches_sim %>% mutate(date = lubridate::as_date(date))
+#' d_matches_sim <- tribble(
+#'   ~date, ~match,
+#'   "2017-08-22", 0,
+#'   "2017-08-23", 1,
+#'   "2017-08-24", 0,
+#'   "2017-08-25", 0,
+#'   "2017-08-26", 1
+#' )
+#' d_matches_sim <- d_matches_sim %>% mutate(date = lubridate::as_date(date))
 #' add_event_id(d_matches_sim, date, match)
 #' @export
-add_event_id = function(d, date, event){
-  date = enquo(date)
-  date_name = as_string(quo_name(date))
-  id = as_string(quo_name(id))
+add_event_id <- function(d, date, event) {
+  date <- enquo(date)
+  date_name <- as_string(quo_name(date))
+  id <- as_string(quo_name(id))
 
   # index for days until event
-  index_distinct = d %>%
-    filter({{event}} == 1 | !!date == max(!!date)) %>%
+  index_distinct <- d %>%
+    filter({{ event }} == 1 | !!date == max(!!date)) %>%
     arrange(!!date) %>%
     distinct(!!date) %>%
     rownames_to_column()
 
   # some dates might be missing. Extracting dates and completing them
-  dates = d %>% pull(!!date)
-  dates = seq.Date(min(dates), max(dates), by ="day") %>% enframe(name = NULL)
-  names(dates) = date_name
+  dates <- d %>% pull(!!date)
+  dates <- seq.Date(min(dates), max(dates), by = "day") %>% enframe(name = NULL)
+  names(dates) <- date_name
 
   # add event-index for completed dates
-  d_index = dates %>% left_join(index_distinct, by = date_name)
+  d_index <- dates %>% left_join(index_distinct, by = date_name)
 
   # add event-index and dates to desired dataset
-  d_events = d %>% full_join(d_index, by = date_name) %>% arrange(!!date)
+  d_events <- d %>%
+    full_join(d_index, by = date_name) %>%
+    arrange(!!date)
 
   # fill missing day-indices
-  d_events = d_events %>%
+  d_events <- d_events %>%
     rename(event_id = rowname) %>%
     fill(event_id, .direction = "up")
   d_events

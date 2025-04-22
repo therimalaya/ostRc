@@ -23,10 +23,10 @@ Calculates severity scores based on
 calculation in the original OSTRC questionnaire paper: doi.org/10.1136/bjsports-2012-091524.
 }
 \examples{
-q1 = c(17, 8, 8, 0)
-q2 = c(25, 17, 17, 0)
-q3 = c(25, 8, 17, 0)
-q4 = c(25, 8, 0, 0)
+q1 <- c(17, 8, 8, 0)
+q2 <- c(25, 17, 17, 0)
+q3 <- c(25, 8, 17, 0)
+q4 <- c(25, 8, 0, 0)
 
 calc_severity_score(q1, q2, q3, q4)
 }

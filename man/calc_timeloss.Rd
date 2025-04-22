@@ -34,15 +34,17 @@ a numeric vector of time loss in number of weeks.
 Calculates time loss, in number of weeks, on OSTRC questionnaire data.
 }
 \examples{
-d_ostrc = tribble(~id_participant, ~id_case, ~date_sent, ~q1,
-                 1, 1, "2023-01-01", 8,
-                 1, 1, "2023-01-07", 8,
-                 1, 1, "2023-01-14", 8,
-                 1, 1, "2023-01-21", 25,
-                 1, 18, "2022-12-07", 25,
-                 1, 18, "2022-12-14", 25,
-                 2, 2, "2023-01-12", 8,
-                 3, NA, "2022-06-05", 0)
+d_ostrc <- tribble(
+  ~id_participant, ~id_case, ~date_sent, ~q1,
+  1, 1, "2023-01-01", 8,
+  1, 1, "2023-01-07", 8,
+  1, 1, "2023-01-14", 8,
+  1, 1, "2023-01-21", 25,
+  1, 18, "2022-12-07", 25,
+  1, 18, "2022-12-14", 25,
+  2, 2, "2023-01-12", 8,
+  3, NA, "2022-06-05", 0
+)
 
 calc_timeloss(d_ostrc, id_participant, id_case, date_sent, q1)
 }

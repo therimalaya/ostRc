@@ -33,12 +33,14 @@ all days from first match to second match in the next cycle and so on.
 Requires a date-variable and an indicator for the event (injury/match/competition).
 }
 \examples{
-d_matches_sim = tribble(~date, ~match,
-                        "2017-08-22", 0,
-                        "2017-08-23", 1,
-                        "2017-08-24", 0,
-                        "2017-08-25", 0,
-                        "2017-08-26", 1)
-d_matches_sim = d_matches_sim \%>\% mutate(date = lubridate::as_date(date))
+d_matches_sim <- tribble(
+  ~date, ~match,
+  "2017-08-22", 0,
+  "2017-08-23", 1,
+  "2017-08-24", 0,
+  "2017-08-25", 0,
+  "2017-08-26", 1
+)
+d_matches_sim <- d_matches_sim \%>\% mutate(date = lubridate::as_date(date))
 add_event_id(d_matches_sim, date, match)
 }

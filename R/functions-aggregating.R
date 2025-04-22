@@ -13,12 +13,12 @@ NULL
 #' @param x a vector of training load values
 #' @param abs Whether to calculate the absolute values of the differences TRUE, or not, FALSE. Defaults to FALSE.
 #' @export
-moving_range  = function(x, abs = FALSE){
-  x_lag = dplyr::lag(x)
-  x_diff = x-x_lag
-   if(abs){
-   x_diff = abs(x_diff)
-   }
+moving_range <- function(x, abs = FALSE) {
+  x_lag <- dplyr::lag(x)
+  x_diff <- x - x_lag
+  if (abs) {
+    x_diff <- abs(x_diff)
+  }
   x_diff
 }
 
@@ -36,7 +36,7 @@ moving_range  = function(x, abs = FALSE){
 #'                   A numeric argument to partial can be used to determine the minimal window size
 #'                  for partial computations. Defaults to TRUE and will calculate RA based on what you have available.
 #' @export
-ra = function(x, n_days, window = TRUE, ...){
+ra <- function(x, n_days, window = TRUE, ...) {
   zoo::rollapplyr(x, n_days, mean, partial = window)
 }
 
@@ -53,6 +53,6 @@ ra = function(x, n_days, window = TRUE, ...){
 #' @param wilder logical; wilder=FALSE (the default) uses an exponential smoothing ratio of 2/(n+1),
 #' same as in williams et al. 2016. wilder=TRUE uses Welles Wilder's exponential smoothing ratio of 1/n
 #' @export
-ewma = function(x, n, wilder = FALSE){
+ewma <- function(x, n, wilder = FALSE) {
   TTR::EMA(x, n = n, wilder)
 }

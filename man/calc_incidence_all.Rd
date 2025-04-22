@@ -48,22 +48,23 @@ Uses `calc_incidence_mean` to calculate for each type.
 }
 \examples{
 library(tidyr)
-d_ostrc = tribble(~id_participant, ~week_nr, ~hp, ~hp_sub, ~season,
-                 1, 1, 1, 0, 1,
-                 1, 2, 1, 1, 1,
-                 1, 3, 0, 0, 1,
-                 2, 1, 1, 1, 1,
-                 2, 2, 1, 1, 1,
-                 3, 1, 0, 0, 1,
-                 3, 2, 0, 0, 1,
-                 1, 1, 1, 0, 2,
-                 1, 2, 1, 0, 2,
-                 1, 3, 0, 0, 2,
-                 2, 1, 1, 0, 2,
-                 2, 2, 1, 0, 2,
-                 3, 1, 1, 1, 2,
-                 3, 2, 1, 1, 2
-                 )
-hp_types_vector = c("hp", "hp_sub")
+d_ostrc <- tribble(
+  ~id_participant, ~week_nr, ~hp, ~hp_sub, ~season,
+  1, 1, 1, 0, 1,
+  1, 2, 1, 1, 1,
+  1, 3, 0, 0, 1,
+  2, 1, 1, 1, 1,
+  2, 2, 1, 1, 1,
+  3, 1, 0, 0, 1,
+  3, 2, 0, 0, 1,
+  1, 1, 1, 0, 2,
+  1, 2, 1, 0, 2,
+  1, 3, 0, 0, 2,
+  2, 1, 1, 0, 2,
+  2, 2, 1, 0, 2,
+  3, 1, 1, 1, 2,
+  3, 2, 1, 1, 2
+)
+hp_types_vector <- c("hp", "hp_sub")
 calc_incidence_all(d_ostrc, id_participant, week_nr, hp_types_vector)
 }

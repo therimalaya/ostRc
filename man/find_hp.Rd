@@ -28,9 +28,9 @@ that were not “Full participation without health problems”
 is considered a health problem.
 }
 \examples{
-  ostrc_1 = c(0, 8, 17, 25)
-  find_hp(ostrc_1)
+ostrc_1 <- c(0, 8, 17, 25)
+find_hp(ostrc_1)
 
-  ostrc_1_other_values = c(0, 1, 2, 3)
-  find_hp(ostrc_1_other_values)
+ostrc_1_other_values <- c(0, 1, 2, 3)
+find_hp(ostrc_1_other_values)
 }

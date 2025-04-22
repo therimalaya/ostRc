@@ -23,6 +23,6 @@ The function automatically arranges these from smallest to largest and assigns
 the smallest value to 0, the next smallest to 8, medium to 17, and highest value to 25.
 }
 \examples{
-ostrc_q = c(0, 1, 2, 3, 2, 2, 3)
+ostrc_q <- c(0, 1, 2, 3, 2, 2, 3)
 standardize_coding(ostrc_q)
 }

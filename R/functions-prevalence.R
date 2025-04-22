@@ -24,30 +24,32 @@ NULL
 #'                to calculate the prevalance on.
 #' @examples
 #' library(tidyr)
-#' d_ostrc = tribble(~id_participant, ~week_nr, ~hp,
-#'                   1, 1, 1,
-#'                   1, 1, 1,
-#'                   1, 2, 0,
-#'                   2, 1, 1,
-#'                   2, 2, 1)
+#' d_ostrc <- tribble(
+#'   ~id_participant, ~week_nr, ~hp,
+#'   1, 1, 1,
+#'   1, 1, 1,
+#'   1, 2, 0,
+#'   2, 1, 1,
+#'   2, 2, 1
+#' )
 #' calc_prevalence(d_ostrc, id_participant, week_nr, hp)
 #' @export
-calc_prevalence = function(d_ostrc, id_participant, time, hp_type){
+calc_prevalence <- function(d_ostrc, id_participant, time, hp_type) {
   options(dplyr.summarise.inform = FALSE)
 
-  id_participant = enquo(id_participant)
-  time = enquo(time)
-  time_name = rlang::as_string(quo_name(time))
-  hp_type = enquo(hp_type)
-  hp_type_name = rlang::as_string(quo_name(hp_type))
+  id_participant <- enquo(id_participant)
+  time <- enquo(time)
+  time_name <- rlang::as_string(quo_name(time))
+  hp_type <- enquo(hp_type)
+  hp_type_name <- rlang::as_string(quo_name(hp_type))
 
-  id_participant_values = d_ostrc %>% pull(!!id_participant)
-  time_values = d_ostrc %>% pull(!!time)
-  hp_type_values = d_ostrc %>% pull(!!hp_type)
+  id_participant_values <- d_ostrc %>% pull(!!id_participant)
+  time_values <- d_ostrc %>% pull(!!time)
+  hp_type_values <- d_ostrc %>% pull(!!hp_type)
 
-  if(all(is.na(id_participant_values)) |
-     all(is.na(time_values)) |
-     all(is.na(hp_type_values))
+  if (all(is.na(id_participant_values)) |
+    all(is.na(time_values)) |
+    all(is.na(hp_type_values))
   ) {
     stop("One of the input variables has only missing NA observations.")
   }
@@ -86,27 +88,29 @@ calc_prevalence = function(d_ostrc, id_participant, time, hp_type){
     )
   }
 
-  if(length(unique(na.omit(hp_type_values)))==1){
-    warning("The prevalence of ",hp_type_name," is constant.")
+  if (length(unique(na.omit(hp_type_values))) == 1) {
+    warning("The prevalence of ", hp_type_name, " is constant.")
   }
 
   # Missing time points won't be included,
   # and missing hp_types won't be included
-  d_nonmissing = d_ostrc %>% filter(!is.na(!!time), !is.na(!!hp_type))
+  d_nonmissing <- d_ostrc %>% filter(!is.na(!!time), !is.na(!!hp_type))
 
   # consider multiple health problems as just 1
-  d_hp_type_per_id_per_time = d_nonmissing %>%
+  d_hp_type_per_id_per_time <- d_nonmissing %>%
     group_by(!!id_participant, !!time) %>%
     summarise(hp_type_n = sum(!!hp_type, na.rm = TRUE)) %>%
     mutate(hp_type_atleast1 = ifelse(hp_type_n > 0, 1, 0)) %>%
     ungroup()
 
   # calculate prevalence
-  d_prevalence = d_hp_type_per_id_per_time %>%
+  d_prevalence <- d_hp_type_per_id_per_time %>%
     group_by(!!time) %>%
-    summarise(n_responses = n(),
-              n_cases = sum(hp_type_atleast1, na.rm = TRUE),
-              prev_cases = n_cases/n_responses) %>%
+    summarise(
+      n_responses = n(),
+      n_cases = sum(hp_type_atleast1, na.rm = TRUE),
+      prev_cases = n_cases / n_responses
+    ) %>%
     ungroup()
   d_prevalence
 }
@@ -130,37 +134,41 @@ calc_prevalence = function(d_ostrc, id_participant, time, hp_type){
 #' @param ci_level The level of the confidence intervals. Default is 0.95 for 95% confidence intervals.
 #' @examples
 #' library(tidyr)
-#' d_ostrc = tribble(~id_participant, ~week_nr, ~hp,
-#'                  1, 1, 1,
-#'                  1, 1, 1,
-#'                  1, 2, 0,
-#'                  2, 1, 1,
-#'                  2, 2, 1,
-#'                  3, 1, 0,
-#'                  3, 2, 0)
+#' d_ostrc <- tribble(
+#'   ~id_participant, ~week_nr, ~hp,
+#'   1, 1, 1,
+#'   1, 1, 1,
+#'   1, 2, 0,
+#'   2, 1, 1,
+#'   2, 2, 1,
+#'   3, 1, 0,
+#'   3, 2, 0
+#' )
 #' calc_prevalence_mean(d_ostrc, id_participant, week_nr, hp)
 #' @export
-calc_prevalence_mean = function(d_ostrc, id_participant, time, hp_type, ci_level = 0.95){
+calc_prevalence_mean <- function(d_ostrc, id_participant, time, hp_type, ci_level = 0.95) {
   options(dplyr.summarise.inform = FALSE)
 
-  id_participant = enquo(id_participant)
-  time = enquo(time)
-  hp_type = enquo(hp_type)
+  id_participant <- enquo(id_participant)
+  time <- enquo(time)
+  hp_type <- enquo(hp_type)
 
-  d_prevalence = calc_prevalence(d_ostrc, !!id_participant, !!time, !!hp_type)
+  d_prevalence <- calc_prevalence(d_ostrc, !!id_participant, !!time, !!hp_type)
 
   # calc prevalences
-  d_prevmean = d_prevalence %>%
-    summarise(prev_mean = mean(prev_cases, na.rm = TRUE),
-              prev_sd = sd(prev_cases, na.rm = TRUE))
+  d_prevmean <- d_prevalence %>%
+    summarise(
+      prev_mean = mean(prev_cases, na.rm = TRUE),
+      prev_sd = sd(prev_cases, na.rm = TRUE)
+    )
 
   # calc CIs
-  count = nrow(d_prevalence)
-  se = sd(d_prevalence$prev_cases, na.rm = TRUE) / sqrt(count)
-  ci_lower = mean(d_prevalence$prev_cases, na.rm = TRUE) - (qt(1 - ((1 - ci_level) / 2), count - 1) * se)
-  ci_upper = mean(d_prevalence$prev_cases, na.rm = TRUE) + (qt(1 - ((1 - ci_level) / 2), count - 1) * se)
+  count <- nrow(d_prevalence)
+  se <- sd(d_prevalence$prev_cases, na.rm = TRUE) / sqrt(count)
+  ci_lower <- mean(d_prevalence$prev_cases, na.rm = TRUE) - (qt(1 - ((1 - ci_level) / 2), count - 1) * se)
+  ci_upper <- mean(d_prevalence$prev_cases, na.rm = TRUE) + (qt(1 - ((1 - ci_level) / 2), count - 1) * se)
 
-  d_prevmean = d_prevmean %>% mutate(prev_ci_lower = ci_lower, prev_ci_upper = ci_upper)
+  d_prevmean <- d_prevmean %>% mutate(prev_ci_lower = ci_lower, prev_ci_upper = ci_upper)
   d_prevmean
 }
 
@@ -193,75 +201,84 @@ calc_prevalence_mean = function(d_ostrc, id_participant, time, hp_type, ci_level
 #' @param ci_level The level of the confidence intervals. Default is 0.95 for 95% confidence intervals.
 #' @examples
 #' library(tidyr)
-#' d_ostrc = tribble(~id_participant, ~week_nr, ~hp, ~hp_sub, ~season,
-#'                  1, 1, 1, 0, 1,
-#'                  1, 2, 1, 1, 1,
-#'                  1, 3, 0, 0, 1,
-#'                  2, 1, 1, 1, 1,
-#'                  2, 2, 1, 1, 1,
-#'                  3, 1, 0, 0, 1,
-#'                  3, 2, 0, 0, 1,
-#'                  1, 1, 1, 0, 2,
-#'                  1, 2, 1, 0, 2,
-#'                  1, 3, 0, 0, 2,
-#'                  2, 1, 1, 0, 2,
-#'                  2, 2, 1, 0, 2,
-#'                  3, 1, 1, 1, 2,
-#'                  3, 2, 1, 1, 2
-#'                  )
-#' hp_types_vector = c("hp", "hp_sub")
+#' d_ostrc <- tribble(
+#'   ~id_participant, ~week_nr, ~hp, ~hp_sub, ~season,
+#'   1, 1, 1, 0, 1,
+#'   1, 2, 1, 1, 1,
+#'   1, 3, 0, 0, 1,
+#'   2, 1, 1, 1, 1,
+#'   2, 2, 1, 1, 1,
+#'   3, 1, 0, 0, 1,
+#'   3, 2, 0, 0, 1,
+#'   1, 1, 1, 0, 2,
+#'   1, 2, 1, 0, 2,
+#'   1, 3, 0, 0, 2,
+#'   2, 1, 1, 0, 2,
+#'   2, 2, 1, 0, 2,
+#'   3, 1, 1, 1, 2,
+#'   3, 2, 1, 1, 2
+#' )
+#' hp_types_vector <- c("hp", "hp_sub")
 #' calc_prevalence_all(d_ostrc, id_participant, week_nr, hp_types_vector)
 #' @export
-calc_prevalence_all = function(d_ostrc, id_participant, time, hp_types, group = NULL, ci_level = 0.95){
+calc_prevalence_all <- function(d_ostrc, id_participant, time, hp_types, group = NULL, ci_level = 0.95) {
   options(dplyr.summarise.inform = FALSE)
 
-  id_participant = enquo(id_participant)
-  time = enquo(time)
-  hp_types_syms = syms(hp_types)
+  id_participant <- enquo(id_participant)
+  time <- enquo(time)
+  hp_types_syms <- syms(hp_types)
 
- if(is.null(group)){
-  l_prevalences = list()
-  for(i in 1:length(hp_types)){
-    l_prevalences[[i]] = calc_prevalence_mean(d_ostrc, !!id_participant, !!time, !!hp_types_syms[[i]], ci_level)
-    l_prevalences[[i]] = l_prevalences[[i]] %>% mutate(hp_type = hp_types[[i]])
+  if (is.null(group)) {
+    l_prevalences <- list()
+    for (i in 1:length(hp_types)) {
+      l_prevalences[[i]] <- calc_prevalence_mean(d_ostrc, !!id_participant, !!time, !!hp_types_syms[[i]], ci_level)
+      l_prevalences[[i]] <- l_prevalences[[i]] %>% mutate(hp_type = hp_types[[i]])
+    }
+    d_prevalences <- bind_rows(l_prevalences)
+    d_prevalences %<>% select(hp_type, starts_with("prev"))
+  } else {
+    group <- syms(group)
+    d_nested <- d_ostrc %>%
+      group_by(!!!group) %>%
+      nest()
+    n_groups <- length(d_nested$data)
+    d_grouping_var <- d_nested %>%
+      select(-data) %>%
+      ungroup()
+    var_name <- names(d_grouping_var)
+
+    for (i in 1:length(d_nested$data)) {
+      group_id <- d_grouping_var %>%
+        slice(i) %>%
+        pull()
+      d_nested$data[[i]][var_name] <- rep(
+        group_id,
+        nrow(d_nested$data[[i]])
+      )
+    }
+
+    l_datasets <- rep(d_nested$data, length(hp_types_syms))
+    l_hp_types <- rep(hp_types_syms, n_groups)
+    l_hp_names <- rep(as.list(hp_types), n_groups)
+
+    pos <- match(l_hp_types, hp_types_syms)
+    pos_wanted <- sort(pos)
+    l_hp_types <- l_hp_types[pos_wanted]
+    l_hp_names <- l_hp_names[pos_wanted]
+
+    list_of_lists <- list(x = l_hp_types, y = l_datasets, z = l_hp_names)
+
+    d_prevalences <- purrr::pmap(
+      list_of_lists,
+      function(x, y, z) {
+        d_prevs <- calc_prevalence_mean(y, !!id_participant, !!time, !!x) %>%
+          mutate(hp_type = z)
+
+        d_prevs[var_name] <- y[var_name][1, ]
+        d_prevs
+      }
+    ) %>% bind_rows()
+    d_prevalences %<>% select(all_of(var_name), hp_type, starts_with("prev"))
   }
-  d_prevalences = bind_rows(l_prevalences)
-  d_prevalences %<>% select(hp_type, starts_with("prev"))
- } else {
-  group = syms(group)
-  d_nested = d_ostrc %>% group_by(!!!group) %>%
-     nest()
-  n_groups = length(d_nested$data)
-  d_grouping_var = d_nested %>% select(-data) %>% ungroup()
-  var_name = names(d_grouping_var)
-
-  for(i in 1:length(d_nested$data)){
-    group_id = d_grouping_var %>% slice(i) %>% pull
-    d_nested$data[[i]][var_name] = rep(group_id,
-                                       nrow(d_nested$data[[i]]))
-  }
-
-  l_datasets = rep(d_nested$data, length(hp_types_syms))
-  l_hp_types = rep(hp_types_syms, n_groups)
-  l_hp_names = rep(as.list(hp_types), n_groups)
-
-  pos = match(l_hp_types, hp_types_syms)
-  pos_wanted = sort(pos)
-  l_hp_types = l_hp_types[pos_wanted]
-  l_hp_names = l_hp_names[pos_wanted]
-
-  list_of_lists = list(x = l_hp_types, y = l_datasets, z = l_hp_names)
-
-  d_prevalences = purrr::pmap(list_of_lists,
-                              function(x, y, z) {
-                                d_prevs = calc_prevalence_mean(y, !!id_participant, !!time, !!x) %>%
-                                  mutate(hp_type = z)
-
-                                d_prevs[var_name] = y[var_name][1,]
-                                d_prevs
-                              }
-  ) %>% bind_rows
-  d_prevalences %<>% select(all_of(var_name), hp_type, starts_with("prev"))
- }
   d_prevalences
 }

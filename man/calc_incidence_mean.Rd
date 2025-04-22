@@ -30,13 +30,15 @@ A function to calculate the mean incidence per given time period, such as per we
 }
 \examples{
 library(tidyr)
-d_ostrc = tribble(~id_participant, ~week_nr, ~hp,
-                 1, 1, 1,
-                 1, 1, 1,
-                 1, 2, 0,
-                 2, 1, 0,
-                 2, 2, 1,
-                 3, 1, 0,
-                 3, 2, 0)
+d_ostrc <- tribble(
+  ~id_participant, ~week_nr, ~hp,
+  1, 1, 1,
+  1, 1, 1,
+  1, 2, 0,
+  2, 1, 0,
+  2, 2, 1,
+  3, 1, 0,
+  3, 2, 0
+)
 calc_incidence_mean(d_ostrc, id_participant, week_nr, hp)
 }
